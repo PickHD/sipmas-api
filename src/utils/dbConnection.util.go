@@ -3,6 +3,8 @@ package utils
 import (
 	"fmt"
 	"os"
+	"sipmas-api/src/apps/complaint"
+	"sipmas-api/src/apps/users"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -19,7 +21,9 @@ func Connect() (*gorm.DB,error) {
 
 	fmt.Println("Database Connected !")
 
-	// db.AutoMigrate()
+	db.AutoMigrate(&users.UserModel{},&users.AddressModel{},&users.UserRolesModel{},&complaint.ComplaintModel{})
+
+	fmt.Println("Database Successfully Migrated !")
 
 	return db,nil
 }
