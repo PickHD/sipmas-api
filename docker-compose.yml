@@ -1,0 +1,113 @@
+version :  "3.5"
+
+services:
+  lb:
+    container_name: sipmas_api_loadbalancer
+    image: nginx:latest
+    volumes:
+      - ./nginx/http.conf:/etc/nginx/nginx.conf
+    ports:
+      - ${LOADBALANCER_PORT}:58401
+    depends_on: 
+      - app1
+      - app2
+      - app3
+    networks:
+      - frontend
+  db:
+    container_name: sipmas_api_database
+    image: postgres
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - ./psql_data:/data/postgres
+    ports:
+      - ${POSTGRES_PORT}:5432
+    networks:
+      - backend
+  adminer:
+    container_name: sipmas_api_adminer
+    image: adminer
+    ports:
+      - ${ADMINER_PORT}:8080
+    depends_on:
+      - db
+    networks:
+      - backend
+  app1:
+    env_file:
+      - .env
+    container_name: sipmas_api_first
+    restart: always
+    build: 
+      context: .
+      dockerfile: images/Dockerfile
+    ports:
+      - ${PORT}:35401
+    depends_on:
+      - db
+    working_dir: /home/sipmas_api
+    volumes:
+      - .:/home/sipmas_api
+    command: go run .
+    networks:
+      - backend
+      - frontend
+    links:
+      - db
+  app2:
+    env_file:
+      - .env
+    container_name: sipmas_api_second
+    restart: always
+    build: 
+      context: .
+      dockerfile: images/Dockerfile
+    environment:
+      PORT : 35402
+    ports:
+      - 35402:35402
+    depends_on:
+      - db
+    working_dir: /home/sipmas_api
+    volumes:
+      - .:/home/sipmas_api
+    command: go run .
+    networks:
+      - backend
+      - frontend
+    links:
+      - db
+  app3:
+    env_file:
+      - .env
+    container_name: sipmas_api_third
+    restart: always
+    build: 
+      context: .
+      dockerfile: images/Dockerfile
+    environment:
+      PORT : 35403
+    ports:
+      - 35403:35403
+    depends_on:
+      - db
+    working_dir: /home/sipmas_api
+    volumes:
+      - .:/home/sipmas_api
+    command: go run .
+    networks:
+      - backend
+      - frontend
+    links:
+      - db
+volumes:
+  data:
+    driver: local
+networks:
+  backend:
+    driver: bridge 
+  frontend:
+    driver: bridge 
