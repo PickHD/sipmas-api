@@ -1,21 +1,21 @@
 version :  "3.5"
 
 services:
-  lb:
-    container_name: sipmas_api_loadbalancer
-    image: nginx:latest
-    volumes:
-      - ./nginx/http.conf:/etc/nginx/nginx.conf
-    ports:
-      - ${LOADBALANCER_PORT}:58401
-    depends_on: 
-      - app1
-      - app2
-      - app3
-    networks:
-      - frontend
+  # lb:
+  #   container_name: sipmas_api_loadbalancer
+  #   image: nginx:latest
+  #   volumes:
+  #     - ./nginx/http.conf:/etc/nginx/nginx.conf
+  #   ports:
+  #     - ${LOADBALANCER_PORT}:58401
+  #   depends_on: 
+  #     - app1
+  #     - app2
+  #     - app3
+  #   networks:
+  #     - frontend
   db:
-    container_name: sipmas_api_database
+    container_name: sipmas_api_postgres
     image: postgres
     environment:
       POSTGRES_USER: ${DB_USER}
@@ -36,10 +36,19 @@ services:
       - db
     networks:
       - backend
-  app1:
+  rds:
+    container_name: sipmas_api_redis
+    image: redis
+    volumes:
+      - ./redis_data:/data/redis
+    ports:
+      - ${REDIS_PORT}:6379
+    networks:
+      - backend
+  app:
     env_file:
       - .env
-    container_name: sipmas_api_first
+    container_name: sipmas_api
     restart: always
     build: 
       context: .
@@ -48,66 +57,72 @@ services:
       - ${PORT}:35401
     depends_on:
       - db
+      - rds
     working_dir: /home/sipmas_api
     volumes:
       - .:/home/sipmas_api
-    command: go run .
+    command: ${TERM_API_COMMAND}
     networks:
       - backend
-      - frontend
+      # - frontend
     links:
       - db
-  app2:
-    env_file:
-      - .env
-    container_name: sipmas_api_second
-    restart: always
-    build: 
-      context: .
-      dockerfile: images/Dockerfile
-    environment:
-      PORT : 35402
-    ports:
-      - 35402:35402
-    depends_on:
-      - db
-    working_dir: /home/sipmas_api
-    volumes:
-      - .:/home/sipmas_api
-    command: go run .
-    networks:
-      - backend
-      - frontend
-    links:
-      - db
-  app3:
-    env_file:
-      - .env
-    container_name: sipmas_api_third
-    restart: always
-    build: 
-      context: .
-      dockerfile: images/Dockerfile
-    environment:
-      PORT : 35403
-    ports:
-      - 35403:35403
-    depends_on:
-      - db
-    working_dir: /home/sipmas_api
-    volumes:
-      - .:/home/sipmas_api
-    command: go run .
-    networks:
-      - backend
-      - frontend
-    links:
-      - db
+      - rds
+  # app2:
+  #   env_file:
+  #     - .env
+  #   container_name: sipmas_api_second
+  #   restart: always
+  #   build: 
+  #     context: .
+  #     dockerfile: images/Dockerfile
+  #   environment:
+  #     PORT : 35402
+  #   ports:
+  #     - 35402:35402
+  #   depends_on:
+  #     - db
+  #     - rds
+  #   working_dir: /home/sipmas_api
+  #   volumes:
+  #     - .:/home/sipmas_api
+  #   command: ${TERM_API_COMMAND}
+  #   networks:
+  #     - backend
+  #     - frontend
+  #   links:
+  #     - db
+  #     - rds
+  # app3:
+  #   env_file:
+  #     - .env
+  #   container_name: sipmas_api_third
+  #   restart: always
+  #   build: 
+  #     context: .
+  #     dockerfile: images/Dockerfile
+  #   environment:
+  #     PORT : 35403
+  #   ports:
+  #     - 35403:35403
+  #   depends_on:
+  #     - db
+  #     - rds
+  #   working_dir: /home/sipmas_api
+  #   volumes:
+  #     - .:/home/sipmas_api
+  #   command: ${TERM_API_COMMAND}
+  #   networks:
+  #     - backend
+  #     - frontend
+  #   links:
+  #     - db
+  #     - rds
 volumes:
   data:
     driver: local
 networks:
   backend:
     driver: bridge 
-  frontend:
-    driver: bridge 
+  # frontend:
+  #   driver: bridge 

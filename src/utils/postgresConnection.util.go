@@ -19,11 +19,11 @@ func Connect() (*gorm.DB,error) {
 		return nil,err
 	}
 
-	fmt.Println("Database Connected !")
+	fmt.Println("Database Connected Successfully !")
 
-	db.AutoMigrate(&users.UserModel{},&users.AddressModel{},&users.UserRolesModel{},&complaint.ComplaintModel{})
+	db.AutoMigrate(&users.UserModel{},&users.AddressModel{},&complaint.ComplaintModel{})
 
-	fmt.Println("Database Successfully Migrated !")
+	fmt.Println("Database Migrated Successfully !")
 
 	return db,nil
 }

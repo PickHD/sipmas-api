@@ -14,6 +14,15 @@ type SignupValidation struct {
 }
 
 type SigninValidation struct {
-	Ktp				string	`json:"ktp" binding:"required"`
+	Email			string	`json:"email" binding:"required"`
 	Password	string	`json:"password" binding:"required"`
+}
+
+type TokenDetails struct {
+  AccessToken   string
+  RefreshToken  string
+  AccessUuid    string
+  RefreshUuid   string
+  AtExpires     int64
+  RtExpires     int64
 }

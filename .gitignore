@@ -1,3 +1,4 @@
-PLAN
 psql_data
+redis_data
 .env
+tmp

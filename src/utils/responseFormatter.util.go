@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ResponseFormatter(code int,message string,err error ,result []interface{},c *gin.Context){
+func ResponseFormatter(code int,message string,err error ,result map[string]interface{},c *gin.Context){
 	if code < 400 {
 		c.JSON(code,gin.H{
 			"code":code,

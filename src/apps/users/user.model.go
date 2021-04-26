@@ -4,23 +4,24 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+  "golang.org/x/crypto/bcrypt"
 )
 
 type UserModel struct {
 	gorm.Model
 
 	FullName 		string				 `gorm:"notNull"`
-	Ktp					string				 `gorm:"notNull;index"`
+	Ktp					string				 `gorm:"notNull"`
 	Password		string				 `gorm:"notNull"`
-	Email		  	string				 `gorm:"notNull"`
+	Email		  	string				 `gorm:"notNull;index"`
 	Age					int					   `gorm:"notNull"`
-	AddressID		int
-	Address			AddressModel	 `gorm:"foreignKey:AddressID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+  AddressID   int 
+	Address			AddressModel	 
 	Phone				string				 `gorm:"notNull"`
 	IsActive 		bool					 `gorm:"notNull;default:true"`
-	LastLoginAt	time.Time			 `gorm:"notNull"`
-	RolesID			int
-	Roles				UserRolesModel `gorm:"foreignKey:RolesID;references:ID;constraint:OnDelete:CASCADE,OnUpdate:CASCADE"`
+  IsVerified  bool           `gorm:"notNull;default:false"`
+	LastLoginAt	time.Time
+	Roles				string         `gorm:"notNull;default:USER"`
 }
 
 type AddressModel struct {
@@ -32,8 +33,37 @@ type AddressModel struct {
 	PostalCode	string	`gorm:"notNull"`
 }
 
-type UserRolesModel struct {
-	gorm.Model
+func (u *UserModel) BeforeCreate(tx *gorm.DB) error {
+  return u.HashPassword(tx)
+}
 
-	RolesName		string	`gorm:"notNull"`
+func (u *UserModel) BeforeUpdate(tx *gorm.DB) error {
+  if tx.Statement.Changed("Password") {
+    return u.HashPassword(tx)
+  }
+
+  return nil
+}
+
+func (u *UserModel) HashPassword(tx *gorm.DB) error {
+  var newPass string
+
+  switch u := tx.Statement.Dest.(type) {
+
+    case map[string]interface{}:
+      newPass = u["password"].(string)
+    case *UserModel:
+      newPass = u.Password
+    case []*UserModel:
+      newPass = u[tx.Statement.CurDestIndex].Password
+
+  }
+
+  b, err := bcrypt.GenerateFromPassword([]byte(newPass), bcrypt.DefaultCost)
+  if err != nil {
+      return err
+  }
+  tx.Statement.SetColumn("password", b)
+
+  return nil
 }
