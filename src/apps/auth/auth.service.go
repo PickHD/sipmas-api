@@ -224,7 +224,7 @@ func CreateJWT(userId uint64) (*TokenDetails,error) {
   atClaims["user_id"] = userId
   atClaims["exp"] = td.AtExpires
 
-  //?New jwt with signed method + access token claims 
+  //?New jwt with signed method + refresh token claims 
   at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 
   //?Signed with secret 
