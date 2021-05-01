@@ -128,6 +128,7 @@ func (h *AuthBaseHandler) TokenHandler(c *gin.Context) {
 
   //!Since token is valid, get the uuid:
   claims, ok := token.Claims.(jwt.MapClaims) //?the token claims should conform to MapClaims
+
   if ok && token.Valid {
     refreshUuid, ok := claims["refresh_uuid"].(string) //?convert the interface to string
     if !ok {
@@ -141,23 +142,23 @@ func (h *AuthBaseHandler) TokenHandler(c *gin.Context) {
     }
 
     //!Delete the previous Refresh Token
-    deleted, delErr := u.DeleteAuth(refreshUuid,h.rdsDB)
-    if delErr != nil || deleted == 0 { //?if any goes wrong
-      u.ResponseFormatter(http.StatusInternalServerError,fmt.Sprintf("Delete Auth Error : %s",err.Error()),err,nil,c)
+    deleted,err:=u.DeleteAuth(refreshUuid,h.rdsDB)
+    if err!=nil||deleted==0{
+      u.ResponseFormatter(http.StatusUnprocessableEntity,"Auth Already Deleted",err,nil,c)
       return
     }
 
     //!Create new jwt with current userId 
     tDetail,err:=CreateJWT(userId)
     if err!=nil{
-      u.ResponseFormatter(http.StatusInternalServerError,fmt.Sprintf("Create JWT Token Error : %s",err.Error()),err,nil,c)
+      u.ResponseFormatter(http.StatusUnprocessableEntity,fmt.Sprintf("Create JWT Token Error : %s",err.Error()),err,nil,c)
       return
     }
 
     //!Create new auth
     err = CreateAuth(userId,tDetail,h.rdsDB)
     if err!=nil{
-      u.ResponseFormatter(http.StatusInternalServerError,fmt.Sprintf("Create Auth Error : %s",err.Error()),err,nil,c)
+      u.ResponseFormatter(http.StatusUnprocessableEntity,fmt.Sprintf("Create Auth Error : %s",err.Error()),err,nil,c)
       return
     }
 
@@ -177,13 +178,13 @@ func (h *AuthBaseHandler) TokenHandler(c *gin.Context) {
 func (h *AuthBaseHandler) SignoutHandler(c *gin.Context) {
   ad,err:=u.ExtractTokenMetadata(c.Request)
   if err!=nil{
-    u.ResponseFormatter(http.StatusUnauthorized,"Unauthorized",err,nil,c)
+    u.ResponseFormatter(http.StatusUnauthorized,"Token anda sudah kadaluarsa, silahkan untuk mendapatkannya disini http://localhost:35401/api/v1/auth/token/refresh",err,nil,c)
     return
   }
 
   deleted,err:=u.DeleteAuth(ad.AccessUuid,h.rdsDB)
   if err!=nil||deleted==0{
-    u.ResponseFormatter(http.StatusUnauthorized,"Unauthorized",err,nil,c)
+    u.ResponseFormatter(http.StatusUnauthorized,"Token anda sudah kadaluarsa, silahkan untuk mendapatkannya disini http://localhost:35401/api/v1/auth/token/refresh",err,nil,c)
     return
   }
 
