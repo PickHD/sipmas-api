@@ -160,14 +160,9 @@ func ConfirmAccToken(token string,db *gorm.DB,rds *redis.Client) error {
     return err
   }
 
-  //!Check if user is not verified  
-  if err:=db.Where("email=? AND is_verified=?",decodedMail,false).First(&confirmUser).Error;err!=nil{
-    //?If not, update user field is_verified from false to true 
-    db.Model(&confirmUser).Where("email = ?", decodedMail).Update("is_verified", true)
-    return nil
-  }
-  
-  return errors.New("akun anda sudah terverifikasi,silahkan untuk melanjutkan masuk")
+  //!Update user field is_verified from false to true 
+  db.Model(&confirmUser).Where("email = ?", decodedMail).Update("is_verified", true)
+  return nil
 
 }
 
@@ -188,7 +183,7 @@ func VerifyUser(db *gorm.DB,validUser *SigninValidation) (mUser.UserModel,error)
 
   //!Check the password is correct or not 
   if err:=bcrypt.CompareHashAndPassword([]byte(getUser.Password),[]byte(validUser.Password));err!=nil{
-    return mUser.UserModel{},err 
+    return mUser.UserModel{},errors.New("invalid password") 
   }
 
   //!Update user field last_login_at to now 
