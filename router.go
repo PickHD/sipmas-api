@@ -40,11 +40,11 @@ func Router() *gin.Engine {
   //!Connecting To Postgres DB & Redis DB 
   db,err:=c.Connect()
 	if err!=nil{
-		fmt.Printf("u.Connect() failed with %s\n",err)
+		fmt.Printf("c.Connect() failed with %s\n",err)
 	}
   rds,err:=c.ConnectRedis()
   if err!=nil{
-    fmt.Printf("u.ConnectRedis() failed with %s\n",err)
+    fmt.Printf("c.ConnectRedis() failed with %s\n",err)
   }
 
   //!Setup Route For Pinging Server 
