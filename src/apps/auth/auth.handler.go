@@ -178,13 +178,13 @@ func (h *AuthBaseHandler) TokenHandler(c *gin.Context) {
 func (h *AuthBaseHandler) SignoutHandler(c *gin.Context) {
   ad,err:=u.ExtractTokenMetadata(c.Request)
   if err!=nil{
-    u.ResponseFormatter(http.StatusUnauthorized,"Token anda sudah kadaluarsa, silahkan untuk mendapatkannya disini http://localhost:35401/api/v1/auth/token/refresh",err,nil,c)
+    u.ResponseFormatter(http.StatusUnauthorized,"Token anda sudah kadaluarsa, silahkan untuk mendapatkannya disini http://localhost:35401/api/v1/auth/token/refresh",nil,nil,c)
     return
   }
 
   deleted,err:=u.DeleteAuth(ad.AccessUuid,h.rdsDB)
   if err!=nil||deleted==0{
-    u.ResponseFormatter(http.StatusUnauthorized,"Token anda sudah kadaluarsa, silahkan untuk mendapatkannya disini http://localhost:35401/api/v1/auth/token/refresh",err,nil,c)
+    u.ResponseFormatter(http.StatusUnauthorized,"Token anda sudah kadaluarsa, silahkan untuk mendapatkannya disini http://localhost:35401/api/v1/auth/token/refresh",nil,nil,c)
     return
   }
 
