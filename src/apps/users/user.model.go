@@ -12,7 +12,7 @@ type UserModel struct {
 	gorm.Model
 
 	FullName 		string				 `gorm:"notNull"`
-	Ktp					string				 `gorm:"notNull"`
+	NIK					string				 `gorm:"notNull"`
 	Password		string				 `gorm:"notNull"`
 	Email		  	string				 `gorm:"notNull;index"`
 	Age					int					   `gorm:"notNull"`
@@ -32,6 +32,14 @@ type AddressModel struct {
 	City 				string	`gorm:"notNull"`
 	SubDistrict	string	`gorm:"notNull"`
 	PostalCode	string	`gorm:"notNull"`
+}
+
+type UpdateUserValidation struct {
+  FullName  string   `json:"fullName"`
+  NIK       string   `json:"nik"`
+  Email     string   `json:"email"`
+  Age       int      `json:"age"`
+  Phone			string	 `json:"phone"`
 }
 
 type ComplaintModel struct {
@@ -64,10 +72,6 @@ func (u *UserModel) BeforeUpdate(tx *gorm.DB) error {
 
   if tx.Statement.Changed("Password") {
     return u.HashPassword(tx)
-  }
-
-  if u.Roles == "ADMIN" {
-    return errors.New("admin not allowed to update")
   }
 
   if tx.Statement.Changed("Role") {

@@ -27,15 +27,6 @@ services:
       - ${POSTGRES_PORT}:5432
     networks:
       - backend
-  adminer:
-    container_name: sipmas_api_adminer
-    image: adminer
-    ports:
-      - ${ADMINER_PORT}:8080
-    depends_on:
-      - db
-    networks:
-      - backend
   rds:
     container_name: sipmas_api_redis
     image: redis
@@ -43,6 +34,15 @@ services:
       - ./redis_data:/data/redis
     ports:
       - ${REDIS_PORT}:6379
+    networks:
+      - backend
+  adminer:
+    container_name: sipmas_api_adminer
+    image: adminer
+    ports:
+      - ${ADMINER_PORT}:8080
+    depends_on:
+      - db
     networks:
       - backend
   app:

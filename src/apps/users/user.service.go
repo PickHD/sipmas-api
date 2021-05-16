@@ -3,6 +3,8 @@ package users
 import (
   "errors"
   "reflect"
+  
+  u "sipmas-api/src/utils"
 
   "gorm.io/gorm"
 )
@@ -30,12 +32,54 @@ func CountComplaintUser(UserID uint,db *gorm.DB) ([]int,error) {
 func FetchUserProfile(UserID uint,db *gorm.DB) (UserModel,error) {
   var getUser UserModel
 
-  //!Find user by user id with joining address table
-  if err:=db.Joins("Address").First(&getUser,"user_models.id=? AND user_models.is_verified=?",UserID,true).Error;err!=nil{
-    return UserModel{},errors.New("user not found")
+  //!Find user by user id and user roles with joining address table
+  if err:=db.Joins("Address").First(&getUser,"user_models.id=? AND user_models.roles=?",UserID,"USER").Error;err!=nil{
+    return UserModel{},errors.New("user not found / admin cannot retrieve privacy data from user")
   }
 
   return getUser,nil
+}
+
+func EditProfile(UserID uint,db *gorm.DB,validUser UpdateUserValidation) (UserModel,error) {
+
+  //!Returning a reflect value (from a user model validation struct)
+  v :=reflect.ValueOf(validUser)
+  typeOfV:=v.Type()
+
+  //!Create blank map 
+  inputData:=map[string]interface{}{}
+
+  //!Loop through number of fields of struct 
+  for i:=0; i < v.NumField(); i++{
+
+    //!fill the map with field name from reflect val , current value with interface{}
+    inputData[typeOfV.Field(i).Name]=v.Field(i).Interface()
+
+    //!If the fields nil , delete that fields
+    if inputData[typeOfV.Field(i).Name]== "" {
+      delete(inputData,typeOfV.Field(i).Name)
+    }
+
+    //!Check if inputData has property Age or not 
+    if val,ok:=inputData["Age"];ok{
+      //!Check if that property is have a zero value or not
+      if u.IsZeroOfUnderlyingType(val){
+        //!If yes, delete that property and value from inputData 
+        delete(inputData,"Age")
+      }
+    }
+  }
+
+  //!Send the prev map as updated fields, along with condition where id user & role "USER" is existed 
+  result:=db.Model(&UserModel{}).Where("id=? AND roles=?",UserID,"USER").Updates(inputData)
+  
+  //!If the no rows affected / 0, return error
+  if result.RowsAffected == 0 {
+    return UserModel{},errors.New("tidak ada yang diupdate")
+  }
+
+  return UserModel{},nil
+
 }
 
 func CreateComplaint(db *gorm.DB,validUser UserModel,validComplaint *ComplaintValidation)(ComplaintModel,error) {

@@ -25,7 +25,7 @@ func CreateUser(db *gorm.DB,vSignupUser *SignupValidation) (mUser.UserModel,erro
   //!Fill user & address struct with given valid signup user
   newUser:= mUser.UserModel {
     FullName: vSignupUser.FullName,
-    Ktp:vSignupUser.Ktp,
+    NIK:vSignupUser.NIK,
     Email:vSignupUser.Email,
     Password: vSignupUser.Password,
     Age:vSignupUser.Age,

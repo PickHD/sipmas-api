@@ -29,6 +29,7 @@ require (
 	github.com/mitchellh/copystructure v1.1.2 // indirect
 	github.com/myesui/uuid v1.0.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/twinj/uuid v1.0.0

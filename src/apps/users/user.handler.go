@@ -45,7 +45,7 @@ func (h *UserBaseHandler) DashboardHandler(c *gin.Context) {
   u.ResponseFormatter(http.StatusOK,"Dashboard Anda",nil,payloadData,c)
 }
 
-func (h *UserBaseHandler) ProfileHandler(c *gin.Context) {
+func (h *UserBaseHandler) GetProfileHandler(c *gin.Context) {
   
   ad,err:=u.ExtractTokenMetadata(c.Request)
   if err!=nil{
@@ -68,6 +68,36 @@ func (h *UserBaseHandler) ProfileHandler(c *gin.Context) {
   payloadData:=map[string]interface{}{"userData":getUser}
 
   u.ResponseFormatter(http.StatusOK,"Profil Anda",nil,payloadData,c)
+
+}
+
+func (h *UserBaseHandler) UpdateProfileHandler(c *gin.Context) {
+  var validUser UpdateUserValidation
+
+  ad,err:=u.ExtractTokenMetadata(c.Request)
+  if err!=nil{
+    u.ResponseFormatter(http.StatusUnauthorized,"Token anda sudah kadaluarsa, silahkan untuk mendapatkannya disini http://localhost:35401/api/v1/auth/token/refresh",nil,nil,c)
+    return
+  }
+
+  userID,err:=u.FetchAuth(ad,h.rdsDB)
+  if err!=nil{
+    u.ResponseFormatter(http.StatusUnauthorized,"User Not Authorized",err,nil,c)
+    return
+  }
+
+  if err:=c.ShouldBindJSON(&validUser);err!=nil{
+    u.ResponseFormatter(http.StatusBadRequest,fmt.Sprintf("Validation Error : %s",err.Error()),err,nil,c)
+    return
+  }
+
+  _,err=EditProfile(uint(userID),h.DB,validUser)
+  if err!=nil{
+    u.ResponseFormatter(http.StatusUnprocessableEntity,fmt.Sprintf("Edit Profile Error : %s",err.Error()),err,nil,c)
+    return
+  }
+
+  u.ResponseFormatter(http.StatusOK,"Data anda sudah diperbaharui",nil,nil,c)
 
 }
 
