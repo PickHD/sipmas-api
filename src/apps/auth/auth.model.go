@@ -2,7 +2,7 @@ package auth
 
 type SignupValidation struct {
 	FullName 		string	`json:"fullName" binding:"required"`
-	Ktp					string	`json:"ktp" binding:"required"`
+	NIK					string	`json:"ktp" binding:"required"`
 	Email		  	string	`json:"email" binding:"required"`
 	Password		string	`json:"password" binding:"required"`
 	Age					int			`json:"age" binding:"required"`
